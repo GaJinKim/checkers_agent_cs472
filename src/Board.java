@@ -30,11 +30,30 @@ public class Board  {
         }
     }
 
-    /**
-     * getters
-     */
-    Piece[][] getBoard() {
+    static Piece[][] getBoard() {
         return board;
+    }
+    static int getNumOfRedPieces() {
+        int redPieces = 0;
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (board[i][j].equals(Piece.RM) || board[i][j].equals(Piece.RK)) {
+                    redPieces++;
+                }
+            }
+        }
+        return redPieces;
+    }
+    static int getNumOfWhitePieces() {
+        int whitePieces = 0;
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (board[i][j].equals(Piece.WM) || board[i][j].equals(Piece.WK)) {
+                    whitePieces++;
+                }
+            }
+        }
+        return whitePieces;
     }
 
     static void printBoard() {

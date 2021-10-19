@@ -6,4 +6,8 @@ public class State {
         playerToMove = 'r';
     }
 
+    int getStateEvaluation() {
+        return Board.getNumOfRedPieces() - Board.getNumOfWhitePieces();
+    }
+
 }
