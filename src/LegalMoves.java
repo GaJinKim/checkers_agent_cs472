@@ -39,7 +39,7 @@ public class LegalMoves {
         }
         // only consider the moves with the largest amount of captures
         updateMaxCaptures();
-        removeAllButMaxCaptures();
+//        removeAllButMaxCaptures();
     }
 
     /**
@@ -55,7 +55,7 @@ public class LegalMoves {
     /**
      * removes all but the moves with the largest number of viable captures from the list of legal moves
      */
-    static void removeAllButMaxCaptures() {
+    static void removeIfNotFinalMove() {
         ArrayList<Move> updatedLegalMoves = new ArrayList<Move>();
         for (int i = 0; i < legalMoves.size(); i++) {
             if (legalMoves.get(i).getCaptures() == maxCaptures)
@@ -400,7 +400,6 @@ public class LegalMoves {
             }
         }
     }
-
 
     static void establishRelation(State parent, State child) {
         parent.addChildren(child);

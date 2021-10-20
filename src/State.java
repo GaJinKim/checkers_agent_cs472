@@ -7,6 +7,8 @@ public class State {
     private int evaluation;
     private Player player;
 
+    public static ArrayList<State> leaves = new ArrayList<State>();
+
     /**
      * constructors
      */
@@ -52,6 +54,7 @@ public class State {
     ArrayList<State> getChildren() {
         return children;
     }
+    ArrayList<State> getLeaves() { return leaves; }
     int getEvaluation() {
         return evaluation;
     }
@@ -179,6 +182,32 @@ public class State {
             System.out.println("\n|____|____|____|____|____|____|____|____|");
         }
     }
+
+    void printBoardMini() {
+        for (int i = 7; i >= 0; i--) {
+            for (int j = 0; j < 8; j++) {
+                switch (board[i][j]) {
+                    case RM:
+                        System.out.print("RM ");
+                        break;
+                    case RK:
+                        System.out.print("RK ");
+                        break;
+                    case WM:
+                        System.out.print("WM ");
+                        break;
+                    case WK:
+                        System.out.print("WK ");
+                        break;
+                    default:
+                        System.out.print("__ ");
+                        break;
+                }
+            }
+            System.out.println();
+        }
+    }
+
     void printTileIndexes() {
         System.out.println(" _______________________________________");
         for (int i = 7; i >= 0; i--) {
@@ -187,6 +216,25 @@ public class State {
                 System.out.print(" " + i + j + " |");
             }
             System.out.println("\n|____|____|____|____|____|____|____|____|");
+        }
+    }
+
+    void updateLeaves(State state) {
+        if (state.getChildren().size() == 0) {
+            leaves.add(state);
+            return;
+        } for (int i = 0; i < state.getChildren().size(); i++) {
+            updateLeaves(state.getChildren().get(i));
+        }
+    }
+
+    void refreshLeaves() {
+        leaves = new ArrayList<State>();
+    }
+
+    void printLeaves() {
+        for (State state : leaves) {
+            state.printBoard();
         }
     }
 }
