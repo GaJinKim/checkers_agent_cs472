@@ -41,19 +41,33 @@ public class LegalMoves {
     }
 
     void setLegalMoves(State state, Player player) {
-        // if there is a jump move, it is forced
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                if (state.getPieceAt(i, j).equals(Piece.RM) || state.getPieceAt(i, j).equals(Piece.RK))
-                    addLegalJumpMovesRed(state, i, j, state.getPieceAt(i, j), 0);
-            }
-        }
+        switch(player) {
+            case RED:
+                // if there is a jump move, it is forced
+                for (int i = 0; i < 8; i++) {
+                    for (int j = 0; j < 8; j++) {
+                        if (state.getPieceAt(i, j).equals(Piece.RM) || state.getPieceAt(i, j).equals(Piece.RK))
+                            addLegalJumpMovesRed(state, i, j, state.getPieceAt(i, j), 0);
+                    }
+                }
+                // if there are no jump moves (aka no captures), search for legal simple moves
+                if (legalMoves.size() == 0)
+                    addLegalSimpleMovesRed(state);
+                break;
+            case WHITE:
+//                for (int i = 0; i < 8; i++) {
+//                    for (int j = 0; j < 8; j++) {
+//                        if (state.getPieceAt(i, j).equals(Piece.RM) || state.getPieceAt(i, j).equals(Piece.RK))
+//                            addLegalJumpMovesWhite(state, i, j, state.getPieceAt(i, j), 0);
+//                    }
+//                }
+//                if (legalMoves.size() == 0)
+//                    addLegalSimpleMovesWhite(state);
+                break;
+            default:
+                break;
 
-        // if there are no jump moves (aka no captures), search for legal simple moves
-        if (legalMoves.size() == 0) {
-            addLegalSimpleMovesRed(state);
         }
-
         // only consider the moves with the largest amount of captures
         updateMaxCaptures();
         removeAllButMaxCaptures();

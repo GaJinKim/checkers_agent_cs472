@@ -11,7 +11,7 @@ public class Main {
 //        state.setPieceAt(6, 4, Piece.WM);
 //        state.setPieceAt(6, 6, Piece.WM);
         state.setPieceAt(3,1,Piece.WM);
-        state.setPieceAt(6,2,Piece.E);
+        state.setPieceAt(3,3,Piece.WM);
 
         state.printBoard();
 //        Board.printTileIndexes();
@@ -36,10 +36,8 @@ public class Main {
     static void printLeafs(State state) {
         if (state.getChildren().size() == 0) {
             state.printBoard();
-            System.out.println(state.getEvaluation());
-        }
-
-        else {
+            System.out.println("current board evaluation: " + state.getEvaluation());
+        } else {
             for (int i = 0; i < state.getChildren().size(); i++) {
                 printLeafs(state.getChildren().get(i));
             }
