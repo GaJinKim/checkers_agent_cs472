@@ -28,6 +28,16 @@ public class State {
         this.evaluation = calculateEvaluation();
         this.player = state.getPlayer();
     }
+    public State(State state, Player player) {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                this.board[i][j] = state.getBoard()[i][j];
+            }
+        }
+        this.children = new ArrayList<>();
+        this.evaluation = calculateEvaluation();
+        this.player = player;
+    }
 
 
     /**
