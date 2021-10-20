@@ -15,6 +15,7 @@ public class State {
         initialRedPieces();
         initialWhitePieces();
         this.children = new ArrayList<State>();
+        this.evaluation = calculateEvaluation();
         this.player = Player.RED;
     }
     public State(State state) {
@@ -24,6 +25,7 @@ public class State {
             }
         }
         this.children = new ArrayList<>();
+        this.evaluation = calculateEvaluation();
         this.player = state.getPlayer();
     }
 
@@ -112,8 +114,12 @@ public class State {
     }
 
     void updateEvaluation() {
-        this.evaluation = getNumOfRedPieces() - getNumOfWhitePieces();
+        setEvaluation(calculateEvaluation());
     }
+    int calculateEvaluation() {
+        return getNumOfRedPieces() - getNumOfWhitePieces();
+    }
+
     int getNumOfRedPieces() {
         int redPieces = 0;
         for (int i = 0; i < 8; i++) {

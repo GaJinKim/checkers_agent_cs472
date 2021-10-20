@@ -29,14 +29,30 @@ public class LegalMoves {
 //        return legalMoves;
 //    }
 
+    /**
+     * getters
+     */
+    int getMaxCaptures() {
+        return maxCaptures;
+    }
+
+    void setMaxCaptures(int maxCaptures) {
+        this.maxCaptures = maxCaptures;
+    }
+
     void setLegalMoves(State state, Player player) {
+        // if there is a jump move, it is forced
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 if (state.getPieceAt(i, j).equals(Piece.RM) || state.getPieceAt(i, j).equals(Piece.RK))
-                    addLegalMovesRed(state, i, j, state.getPieceAt(i, j), 0);
+                    addLegalJumpMovesRed(state, i, j, state.getPieceAt(i, j), 0);
             }
         }
 
+        // if there are no jump moves (aka no captures), search for legal simple moves
+        if (legalMoves.size() == 0) {
+            addLegalSimpleMovesRed(state);
+        }
 
         // only consider the moves with the largest amount of captures
         updateMaxCaptures();
@@ -52,10 +68,6 @@ public class LegalMoves {
                 setMaxCaptures(m.getCaptures());
             }
         }
-    }
-
-    void setMaxCaptures(int maxCaptures) {
-        this.maxCaptures = maxCaptures;
     }
 
     /**
@@ -79,81 +91,88 @@ public class LegalMoves {
         }
     }
 
-//    void addLegalSimpleMovesForPlayerRed(State state) {
-//        for (int row = 0; row < 8; row++) {
-//            for (int col = 0; col < 8; col++) {
-//                switch (state.getPieceAt(row, col)) {
-//                    // red pieces may only move forwards (towards row 7)
-//                    case RM:
-//                        if (col != 0 && state.getPieceAt(row+1, col-1).equals(Piece.E))
-//                            legalMoves.add(new Move(row, col, row + 1, col - 1));
-//                        if (col != 7 && state.getPieceAt(row+1, col+1).equals(Piece.E))
-//                            legalMoves.add(new Move(row, col, row + 1, col + 1));
-//                        break;
-//                    // kings can move both forward and backwards (regardless of color)
-//                    case RK:
-//                        if (col != 0 && state.getPieceAt(row+1, col-1).equals(Piece.E))
-//                            legalMoves.add(new Move(row, col, row + 1, col - 1));
-//                        if (col != 7 && state.getPieceAt(row+1, col+1).equals(Piece.E))
-//                            legalMoves.add(new Move(row, col, row + 1, col + 1));
-//                        if (col != 0 && state.getPieceAt(row-1, col-1).equals(Piece.E))
-//                            legalMoves.add(new Move(row, col, row - 1, col - 1));
-//                        if (col != 7 && state.getPieceAt(row-1, col+1).equals(Piece.E))
-//                            legalMoves.add(new Move(row, col, row - 1, col + 1));
-//                        break;
-//                    default:
-//                        break;
-//                }
-//            }
-//        }
-//    }
-//
-//    void addLegalSimpleMovesForPlayerWhite(State state) {
-//        for (int row = 0; row < 8; row++) {
-//            for (int col = 0; col < 8; col++) {
-//                switch (state.getPieceAt(row, col)) {
-//                    // white pieces may only move backwards (towards row 0)
-//                    case WM:
-//                        if (col != 0 && state.getPieceAt(row-1, col-1).equals(Piece.E))
-//                            legalMoves.add(new Move(row, col, row - 1, col - 1));
-//                        if (col != 7 && state.getPieceAt(row-1, col+1).equals(Piece.E))
-//                            legalMoves.add(new Move(row, col, row - 1, col + 1));
-//                        break;
-//                    // kings can move both forward and backwards (regardless of color)
-//                    case WK:
-//                        if (col != 0 && state.getPieceAt(row+1, col-1).equals(Piece.E))
-//                            legalMoves.add(new Move(row, col, row + 1, col - 1));
-//                        if (col != 7 && state.getPieceAt(row+1, col+1).equals(Piece.E))
-//                            legalMoves.add(new Move(row, col, row + 1, col + 1));
-//                        if (col != 0 && state.getPieceAt(row-1, col-1).equals(Piece.E))
-//                            legalMoves.add(new Move(row, col, row - 1, col - 1));
-//                        if (col != 7 && state.getPieceAt(row-1, col+1).equals(Piece.E))
-//                            legalMoves.add(new Move(row, col, row - 1, col + 1));
-//                        break;
-//                    default:
-//                        break;
-//                }
-//            }
-//        }
-//    }
+    void addLegalSimpleMovesRed(State state) {
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                switch (state.getPieceAt(row, col)) {
+                    // red pieces may only move forwards (towards row 7)
+                    case RM:
+                        if (col != 0 && state.getPieceAt(row + 1, col - 1).equals(Piece.E)) {
+                            legalMoves.add(new Move(row, col, row + 1, col - 1));
+                            State childState = new State(state);
+                            childState.setPieceAt(row, col, Piece.E);
 
-    // if current piece is red
-        // if top left square is white
-            // if up left left or up left right is empty
-                // create new dummy state (with board updated - aka delete white piece and adjust red piece so that we're up left)
-                // call current program with new dummy state
-        // if top right square is white
-            // if up right left or up right right is empty
-                // create new dummy state (with board updated so that we're up right)
-                // call current program with new dummy state
+                            if (row + 1 == 7)
+                                childState.setPieceAt(row + 1, col - 1, Piece.RK);
+                            else
+                                childState.setPieceAt(row + 1, col - 1, Piece.RM);
 
-//    void getLegalMovesForRed(State state) {
-//        for (int i = 0; i < )
-//
-//    }
+                            childState.updateEvaluation();
+                            establishRelation(state, childState);
+                        }
+                        if (col != 7 && state.getPieceAt(row + 1, col + 1).equals(Piece.E)) {
+                            legalMoves.add(new Move(row, col, row + 1, col + 1));
+                            State childState = new State(state);
+                            childState.setPieceAt(row, col, Piece.E);
+
+                            if (row + 1 == 7)
+                                childState.setPieceAt(row + 1, col + 1, Piece.RK);
+                            else
+                                childState.setPieceAt(row + 1, col + 1, Piece.RM);
+
+                            childState.updateEvaluation();
+                            establishRelation(state, childState);
+                        }
+                        break;
+
+                    // kings can move both forward and backwards (regardless of color)
+                    case RK:
+                        if (col != 0 && state.getPieceAt(row+1, col-1).equals(Piece.E)) {
+                            legalMoves.add(new Move(row, col, row + 1, col - 1));
+                            State childState = new State(state);
+                            childState.setPieceAt(row, col, Piece.E);
+                            childState.setPieceAt(row + 1, col - 1, Piece.RK);
+
+                            childState.updateEvaluation();
+                            establishRelation(state, childState);
+                        }
+                        if (col != 7 && state.getPieceAt(row+1, col+1).equals(Piece.E)) {
+                            legalMoves.add(new Move(row, col, row + 1, col + 1));
+                            State childState = new State(state);
+                            childState.setPieceAt(row, col, Piece.E);
+                            childState.setPieceAt(row + 1, col - 1, Piece.RK);
+
+                            childState.updateEvaluation();
+                            establishRelation(state, childState);
+                        }
+                        if (col != 0 && state.getPieceAt(row-1, col-1).equals(Piece.E)) {
+                            legalMoves.add(new Move(row, col, row - 1, col - 1));
+                            State childState = new State(state);
+                            childState.setPieceAt(row, col, Piece.E);
+                            childState.setPieceAt(row + 1, col - 1, Piece.RK);
+
+                            childState.updateEvaluation();
+                            establishRelation(state, childState);
+                        }
+                        if (col != 7 && state.getPieceAt(row-1, col+1).equals(Piece.E)) {
+                            legalMoves.add(new Move(row, col, row - 1, col + 1));
+                            State childState = new State(state);
+                            childState.setPieceAt(row, col, Piece.E);
+                            childState.setPieceAt(row + 1, col - 1, Piece.RK);
+
+                            childState.updateEvaluation();
+                            establishRelation(state, childState);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
 
     // adds legal moves for a specific piece for red player with red man
-    void addLegalMovesRed(State state, int row, int col, Piece piece, int captures) {
+    void addLegalJumpMovesRed(State state, int row, int col, Piece piece, int captures) {
         if (row <= 5 && col >= 2) {
             // if valid capture up left
             if ((state.getPieceAt(row + 1, col - 1).equals(Piece.WM) || state.getPieceAt(row + 1, col - 1).equals(Piece.WK)) && state.getPieceAt(row + 2, col - 2).equals(Piece.E)) {
@@ -165,12 +184,14 @@ public class LegalMoves {
 
                 if (row + 2 == 7) {
                     childState.setPieceAt(row + 2, col - 2, Piece.RK);
+                    childState.updateEvaluation();
                     establishRelation(state, childState);
-                    addLegalMovesRed(childState, row + 2, col - 2, Piece.RK, captures + 1);
+                    addLegalJumpMovesRed(childState, row + 2, col - 2, Piece.RK, captures + 1);
                 } else {
                     childState.setPieceAt(row + 2, col - 2, Piece.RM);
+                    childState.updateEvaluation();
                     establishRelation(state, childState);
-                    addLegalMovesRed(childState, row + 2, col - 2, Piece.RM, captures + 1);
+                    addLegalJumpMovesRed(childState, row + 2, col - 2, Piece.RM, captures + 1);
                 }
             }
         }
@@ -185,12 +206,14 @@ public class LegalMoves {
 
                 if (row + 2 == 7) {
                     childState.setPieceAt(row + 2, col + 2, Piece.RK);
+                    childState.updateEvaluation();
                     establishRelation(state, childState);
-                    addLegalMovesRed(childState, row + 2, col + 2, Piece.RK, captures + 1);
+                    addLegalJumpMovesRed(childState, row + 2, col + 2, Piece.RK, captures + 1);
                 } else {
                     childState.setPieceAt(row + 2, col + 2, Piece.RM);
+                    childState.updateEvaluation();
                     establishRelation(state, childState);
-                    addLegalMovesRed(childState, row + 2, col + 2, Piece.RM, captures + 1);
+                    addLegalJumpMovesRed(childState, row + 2, col + 2, Piece.RM, captures + 1);
                 }
             }
         }
@@ -203,9 +226,10 @@ public class LegalMoves {
                 childState.setPieceAt(row, col, Piece.E);
                 childState.setPieceAt(row - 1, col - 1, Piece.E);
                 childState.setPieceAt(row - 2, col - 2, Piece.RK);
+                childState.updateEvaluation();
                 establishRelation(state, childState);
 
-                addLegalMovesRed(childState, row - 2, col - 2, Piece.RK, captures + 1);
+                addLegalJumpMovesRed(childState, row - 2, col - 2, Piece.RK, captures + 1);
             }
         }
         if (piece.equals(Piece.RK) && row >= 2 && col <= 5) {
@@ -217,9 +241,10 @@ public class LegalMoves {
                 childState.setPieceAt(row, col, Piece.E);
                 childState.setPieceAt(row - 1, col + 1, Piece.E);
                 childState.setPieceAt(row - 2, col + 2, Piece.RK);
+                childState.updateEvaluation();
                 establishRelation(state, childState);
 
-                addLegalMovesRed(childState, row - 2, col + 2, Piece.RK, captures + 1);
+                addLegalJumpMovesRed(childState, row - 2, col + 2, Piece.RK, captures + 1);
             }
         }
     }

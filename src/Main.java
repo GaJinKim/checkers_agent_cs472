@@ -4,12 +4,14 @@ public class Main {
         LegalMoves moves = new LegalMoves();
 
         // testing adding a random piece
-        state.clearAllPieces();
-        state.setPieceAt(3,3, Piece.RM);
-        state.setPieceAt(4,4, Piece.WM);
-        state.setPieceAt(4,2, Piece.WM);
-        state.setPieceAt(6, 4, Piece.WM);
-        state.setPieceAt(6, 6, Piece.WM);
+//        state.clearAllPieces();
+//        state.setPieceAt(3,3, Piece.RM);
+//        state.setPieceAt(4,4, Piece.WM);
+//        state.setPieceAt(4,2, Piece.WM);
+//        state.setPieceAt(6, 4, Piece.WM);
+//        state.setPieceAt(6, 6, Piece.WM);
+        state.setPieceAt(3,1,Piece.WM);
+        state.setPieceAt(6,2,Piece.E);
 
         state.printBoard();
 //        Board.printTileIndexes();
@@ -34,6 +36,7 @@ public class Main {
     static void printLeafs(State state) {
         if (state.getChildren().size() == 0) {
             state.printBoard();
+            System.out.println(state.getEvaluation());
         }
 
         else {
