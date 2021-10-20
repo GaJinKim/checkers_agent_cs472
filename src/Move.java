@@ -26,6 +26,6 @@ public class Move {
 
     @Override
     public String toString() {
-        return "(" + startRow + "," + startCol + ") -> (" + endRow + "," + endCol + ")" + "    " + getCaptures();
+        return "(" + startRow + "," + startCol + ") -> (" + endRow + "," + endCol + ")" + "  captures: " + getCaptures();
     }
 }
