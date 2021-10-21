@@ -6,64 +6,62 @@ public class Main {
     public static void main(String[] args) {
         State state = new State();
         Scanner scan = new Scanner(System.in);
+        LegalMoves legalMoves = new LegalMoves();
 
         // testing adding a random piece
-//        state.clearAllPieces();
-//        state.setPieceAt(3,3, Piece.RK);
-//        state.setPieceAt(4,4, Piece.WM);
+        state.clearAllPieces();
+        state.setPieceAt(4,0, Piece.RM);
+        state.setPieceAt(7,1, Piece.WM);
+
 //        state.setPieceAt(4,2, Piece.WM);
 //        state.setPieceAt(6, 2, Piece.WM);
 //        state.setPieceAt(6, 4, Piece.WM);
-//        state.setPieceAt(4, 6, Piece.WM);
-//        state.setPieceAt(3,1,Piece.WM);
-//        state.setPieceAt(6,2,Piece.E);
+//        state.setPieceAt(2,4, Piece.WM);
+//        state.setPieceAt(2,6, Piece.WM);
+//        state.setPieceAt(4,6, Piece.WM);
 
-//        state.setPieceAt(2,2, Piece.WM);
-//        state.setPieceAt(1,3, Piece.RM);
-//        state.setPieceAt(1,5, Piece.RM);
+//        System.out.println("[How to play]\nAt each state, you will be asked to pick between a list of legal moves.");
+//        System.out.print("\n[You are first to act (red)]\nType \"start\" to begin: ");
+//        scan.next();
 
-        System.out.println("[Initial Board State]");
+        System.out.println("\n[Initial Board State]");
         state.printBoard();
 
-        /**
-         * before my dumbass forgets, i have it set so that (0,0) is bottom left, (0,7) is bottom right
-         * it's still (row, col)
-         *
-         * Board.printTileIndexes();
-         */
+
         while (true) {
-//            System.out.print("\n[Your Move]");
-            LegalMoves.setLegalMoves(state, Player.RED);
+            System.out.println("\n[Red Player's Legal Moves]");
+            legalMoves.setLegalMoves(state, Player.RED);
 
             if (endDetected(state))
                 break;
+
             state.refreshLeaves();
             state.updateLeaves(state);
 
-            ///////
-            for (int i = 0; i < state.getLeaves().size(); i++) {
-                System.out.println("\nType \"" + i + "\" to move:");
-                state.getLeaves().get(i).printBoardMini();
-            }
+//            for (int i = 0; i < state.getLeaves().size(); i++) {
+//                System.out.println("\nType \"" + i + "\" to move:");
+//                state.getLeaves().get(i).printBoardMini();
+//            }
+//            int decision = scan.nextInt();
+//            if (decision <  0 || decision >= state.getLeaves().size()) {
+//                System.out.println("Invalid move, please enter again: ");
+//                decision = scan.nextInt();
+//            }
+//            state = new State(state.getLeaves().get(decision));
 
-            int decision = scan.nextInt();
-            if (decision <  0 || decision >= state.getLeaves().size()) {
-                System.out.println("Invalid move, please enter again: ");
-                decision = scan.nextInt();
-            }
-            state = new State(state.getLeaves().get(decision));
-            ///////
-//            state = new State(state.getLeaves().get(getValidRandomInd(state.getChildren())), Player.RED);
+            state = new State(state.getLeaves().get(getValidRandomInd(state.getChildren())));
+            state.printBoard();
 
             System.out.println("\n[White's Move]");
-            LegalMoves.setLegalMoves(state, Player.WHITE);
+            legalMoves.setLegalMoves(state, Player.WHITE);
+
             if (endDetected(state))
                 break;
+
             state.refreshLeaves();
             state.updateLeaves(state);
 
-            // Determine move (pick state) based on alpha beta min max
-            state = new State(state.getLeaves().get(getValidRandomInd(state.getChildren())), Player.WHITE);
+            state = new Search().alphaBetaSearch(state);
             state.printBoard();
         }
     }
@@ -89,6 +87,10 @@ public class Main {
         boolean whiteWin = state.getNumOfRedPieces() == 0;
         boolean tie = state.getChildren().size() == 0;
 
+        if (redWin || whiteWin || tie) {
+            System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n[Final Board State]");
+            state.printBoard();
+        }
         if (redWin)
             System.out.println("Game Over: Red Wins");
         else if (whiteWin)

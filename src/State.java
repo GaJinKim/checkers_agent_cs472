@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class State {
     private Piece[][] board = new Piece[8][8];
@@ -7,7 +8,7 @@ public class State {
     private int evaluation;
     private Player player;
 
-    public static ArrayList<State> leaves = new ArrayList<State>();
+    private ArrayList<State> leaves = new ArrayList<State>();
 
     /**
      * constructors
@@ -17,7 +18,7 @@ public class State {
         initialRedPieces();
         initialWhitePieces();
         this.children = new ArrayList<State>();
-        this.evaluation = calculateEvaluation();
+        this.evaluation = evaluationFunction();
         this.player = Player.RED;
     }
     public State(State state) {
@@ -27,7 +28,7 @@ public class State {
             }
         }
         this.children = new ArrayList<>();
-        this.evaluation = calculateEvaluation();
+        this.evaluation = evaluationFunction();
         this.player = state.getPlayer();
     }
     public State(State state, Player player) {
@@ -37,7 +38,7 @@ public class State {
             }
         }
         this.children = new ArrayList<>();
-        this.evaluation = calculateEvaluation();
+        this.evaluation = evaluationFunction();
         this.player = player;
     }
 
@@ -65,6 +66,9 @@ public class State {
     /**
      * setters
      */
+    void setPlayer(Player player) {
+        this.player = player;
+    }
     void setBoard(Piece[][] board) {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++)
@@ -74,12 +78,7 @@ public class State {
     void setParent(State parent) {
         this.parent = parent;
     }
-    void setChildren() {
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++)
-                board[i][j] = Piece.E;
-        }
-    }
+
     void setEvaluation(int evaluation) {
         this.evaluation = evaluation;
     }
@@ -122,15 +121,23 @@ public class State {
         board[row][col] = piece;
     }
 
+    void refreshChildren() {
+        this.children = new ArrayList<State>();
+    }
     void addChildren(State state) {
         this.getChildren().add(state);
     }
 
     void updateEvaluation() {
-        setEvaluation(calculateEvaluation());
+        setEvaluation(evaluationFunction());
     }
-    int calculateEvaluation() {
-        return getNumOfRedPieces() - getNumOfWhitePieces();
+
+    /**
+     * white - max player
+     * red - min player
+     */
+    int evaluationFunction() {
+        return getNumOfWhitePieces() - getNumOfRedPieces();
     }
 
     int getNumOfRedPieces() {
@@ -234,7 +241,16 @@ public class State {
 
     void printLeaves() {
         for (State state : leaves) {
-            state.printBoard();
+            state.printBoardMini();
+            System.out.println();
         }
     }
+
+    void refreshBoard() {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++)
+                board[i][j] = Piece.E;
+        }
+    }
+
 }
