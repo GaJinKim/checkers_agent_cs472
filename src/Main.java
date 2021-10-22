@@ -1,3 +1,4 @@
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
@@ -7,13 +8,14 @@ public class Main {
         State state = new State();
         Scanner scan = new Scanner(System.in);
         LegalMoves legalMoves = new LegalMoves();
+        Search search = new Search();
 
         // testing adding a random piece
         state.clearAllPieces();
         state.setPieceAt(4,0, Piece.RM);
         state.setPieceAt(7,1, Piece.WM);
 
-//        state.setPieceAt(4,2, Piece.WM);
+//        state.setPieceAt(2,0, Piece.WM);
 //        state.setPieceAt(6, 2, Piece.WM);
 //        state.setPieceAt(6, 4, Piece.WM);
 //        state.setPieceAt(2,4, Piece.WM);
@@ -27,16 +29,51 @@ public class Main {
         System.out.println("\n[Initial Board State]");
         state.printBoard();
 
-
+        State curState = new State();
         while (true) {
+            // Red's Turn
+            state.setPlayer(Player.RED);
             System.out.println("\n[Red Player's Legal Moves]");
-            legalMoves.setLegalMoves(state, Player.RED);
+            ArrayList<Piece[][]> redLegalMoves = legalMoves.setLegalMoves(state);
 
-            if (endDetected(state))
+            if (redLegalMoves.isEmpty()) {
+                System.out.println("Red has no legal moves!");
                 break;
+            }
 
-            state.refreshLeaves();
-            state.updateLeaves(state);
+            for (Piece[][] a : redLegalMoves) {
+                curState = new State(a);
+                curState.setPlayer(Player.RED);
+            }
+
+            // TODO: just print out the last state in redLegalMoves for now
+            System.out.println("Red's selected move");
+//            state = new State(curState);
+            state = new State(redLegalMoves.get(new Random().nextInt(redLegalMoves.size())));
+            state.printBoard();
+
+            redLegalMoves.clear();
+
+            // White's Turn
+            state.setPlayer(Player.WHITE);
+            System.out.println("\n[White Player's Legal Moves]");
+            ArrayList<Piece[][]> whiteLegalMoves = legalMoves.setLegalMoves(state);
+
+            if (whiteLegalMoves.isEmpty()) {
+                System.out.println("White has no legal moves!");
+                break;
+            }
+
+            ArrayList<State> bestPossibleMoves = search.alphaBetaSearch(state);
+            System.out.println("White's selected move");
+            state = bestPossibleMoves.get(randomValidIndex(bestPossibleMoves));
+            state.printBoard();
+
+            whiteLegalMoves.clear();
+
+
+//            state.refreshLeaves();
+//            state.updateLeaves(state);
 
 //            for (int i = 0; i < state.getLeaves().size(); i++) {
 //                System.out.println("\nType \"" + i + "\" to move:");
@@ -49,20 +86,8 @@ public class Main {
 //            }
 //            state = new State(state.getLeaves().get(decision));
 
-            state = new State(state.getLeaves().get(getValidRandomInd(state.getChildren())));
-            state.printBoard();
-
-            System.out.println("\n[White's Move]");
-            legalMoves.setLegalMoves(state, Player.WHITE);
-
-            if (endDetected(state))
-                break;
-
-            state.refreshLeaves();
-            state.updateLeaves(state);
-
-            state = new Search().alphaBetaSearch(state);
-            state.printBoard();
+//            state = new State(state.getLeaves().get(getValidRandomInd(state.getChildren())));
+//            state.printBoard();
         }
     }
 
@@ -70,7 +95,7 @@ public class Main {
      * retrieves a valid random index for a given array list
      * @return random valid index
      */
-    static int getValidRandomInd(ArrayList<State> stateArrayList) {
+    static int randomValidIndex(ArrayList<State> stateArrayList) {
         return new Random().nextInt(stateArrayList.size());
     }
 

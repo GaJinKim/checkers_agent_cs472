@@ -20,6 +20,7 @@ public class State {
         this.children = new ArrayList<State>();
         this.evaluation = evaluationFunction();
         this.player = Player.RED;
+        this.leaves = new ArrayList<State>();
     }
     public State(State state) {
         for (int i = 0; i < 8; i++) {
@@ -27,21 +28,21 @@ public class State {
                 this.board[i][j] = state.getBoard()[i][j];
             }
         }
-        this.children = new ArrayList<>();
-        this.evaluation = evaluationFunction();
+        this.parent = state.parent;
+        this.children = state.getChildren();
+        this.evaluation = state.evaluationFunction();
         this.player = state.getPlayer();
+        this.leaves = state.getLeaves();
     }
-    public State(State state, Player player) {
+    public State(Piece[][] board) {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                this.board[i][j] = state.getBoard()[i][j];
+                this.board[i][j] = board[i][j];
             }
         }
         this.children = new ArrayList<>();
         this.evaluation = evaluationFunction();
-        this.player = player;
     }
-
 
     /**
      * getters
@@ -78,7 +79,6 @@ public class State {
     void setParent(State parent) {
         this.parent = parent;
     }
-
     void setEvaluation(int evaluation) {
         this.evaluation = evaluation;
     }
@@ -86,6 +86,15 @@ public class State {
     /**
      * helpers
      */
+    Piece[][] deepCopyBoard() {
+        Piece[][] newBoard = new Piece[8][8];
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                newBoard[i][j] = getBoard()[i][j];
+            }
+        }
+        return newBoard;
+    }
     void initializeEmptyBoard() {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++)
@@ -121,8 +130,8 @@ public class State {
         board[row][col] = piece;
     }
 
-    void refreshChildren() {
-        this.children = new ArrayList<State>();
+    void clearChildren() {
+        this.children.clear();
     }
     void addChildren(State state) {
         this.getChildren().add(state);
@@ -230,7 +239,8 @@ public class State {
         if (state.getChildren().size() == 0) {
             leaves.add(state);
             return;
-        } for (int i = 0; i < state.getChildren().size(); i++) {
+        }
+        for (int i = 0; i < state.getChildren().size(); i++) {
             updateLeaves(state.getChildren().get(i));
         }
     }
