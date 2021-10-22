@@ -1,84 +1,132 @@
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class Search {
+    private int depth;
 
-
-    ArrayList<State> alphaBetaSearch(State state) {
-        LegalMoves legalMoves = new LegalMoves();
-        ArrayList<Piece[][]> possibleMoves = legalMoves.setLegalMoves(state);
-        System.out.println("I have " + possibleMoves.size() + " moves in this position!" + " i am player " + state.getPlayer());
-
-        ArrayList<State> bestPossibleStates = new ArrayList<>();
-        int v = 0;
-
-        // white is max player
-        if (state.getPlayer().equals(Player.WHITE)) {
-            v = maxValue(state, Integer.MIN_VALUE, Integer.MAX_VALUE);
-        }
-
-        // red is min player
-        else if (state.getPlayer().equals(Player.RED)) {
-            v = minValue(state, Integer.MIN_VALUE, Integer.MAX_VALUE);
-        }
-
-        for (Piece[][] move : possibleMoves) {
-            State stateCopy = new State(move);
-            System.out.println("current value of v is: " + v);
-            System.out.println("current value of stateCopy is: " + stateCopy.getEvaluation());
-            bestPossibleStates.add(stateCopy);
-        }
-        return bestPossibleStates;
+    /**
+     * class constructor
+     *
+     * @param depth max depth to search
+     */
+    public Search(int depth) {
+        this.depth = depth;
     }
 
     /**
-     * pick move with highest evaluation amongst all legal moves
+     * searches for best move using alpha beta search algorithm
+     *
+     * @param legalMoves from which to search
+     * @return optimal move (possibly chosen randomly between a group)
      */
-    int maxValue(State state, int alpha, int beta) {
-        LegalMoves legalMoves = new LegalMoves();
-        ArrayList<Piece[][]> possibleMoves = legalMoves.setLegalMoves(state);
-        if (isTerminal(state)) {
-            return utilityFunction(state);
+    public State alphaBetaSearch(ArrayList<State> legalMoves) {
+        if (legalMoves.size() == 1) {
+            return legalMoves.get(0);
+        }
+
+        // if the move in legalMove is red (min player), then the parent is white (maximizing player); therefore bestScore should be initialized to -infinity
+        int bestScore = legalMoves.get(0).getPlayer().equals(Player.RED) ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+        ArrayList<State> bestMoves = new ArrayList<>();
+        for (State child : legalMoves) {
+
+            // legal moves for each move (child) in legalMoves
+            ArrayList<Piece[][]> childLegalMoves = new LegalMoves().setLegalMoves(child);
+            child.refreshLeaves(childLegalMoves);
+
+            int val = child.getPlayer().equals(Player.RED) ? maxValue(child, depth, Integer.MIN_VALUE, Integer.MAX_VALUE) : minValue(child, depth, Integer.MIN_VALUE, Integer.MAX_VALUE);
+
+            if (child.getPlayer().equals(Player.RED)) {
+                if (val > bestScore) {
+                    bestScore = val;
+                    bestMoves.clear();
+                }
+            } else {
+                if (val < bestScore) {
+                    bestScore = val;
+                    bestMoves.clear();
+
+                }
+            }
+            if (val == bestScore) {
+                bestMoves.add(child);
+            }
+        }
+
+        System.out.println("of which " + bestMoves.size() + " (optimal) moves will be considered.");
+        System.out.println();
+        return randomMove(bestMoves);
+    }
+
+    /**
+     * utility value for max player (WHITE)
+     *
+     * @param state from which to find utility value
+     * @param depth max depth to search
+     * @param alpha value
+     * @param beta value
+     * @return maximizing utility value
+     */
+    private int maxValue(State state, int depth, int alpha, int beta) {
+        if (depth == 0 || state.gameOver()) {
+            return state.getEvaluation();
         }
 
         int v = Integer.MIN_VALUE;
-        for (Piece[][] move : possibleMoves) {
-            State stateCopy = new State(move);
-            v = Math.max(v, minValue(stateCopy, alpha, beta));
-            state.setEvaluation(v);
-            if (v >= beta)
-                return v;
+        for (State child : state.getLeaves()) {
+
+            ArrayList<Piece[][]> childLegalMoves = new LegalMoves().setLegalMoves(child);
+            child.refreshLeaves(childLegalMoves);
+
+            v = Math.max(v, minValue(child, depth - 1, alpha, beta));
             alpha = Math.max(alpha, v);
+
+            if (alpha >= beta) {
+                break;
+            }
         }
         return v;
     }
 
     /**
-     * pick move with lowest evaluation amongst all legal moves
+     * utility value for min player (RED)
+     *
+     * @param state from which to find utility value
+     * @param depth max depth to search
+     * @param alpha value
+     * @param beta value
+     * @return minimizing utility value
      */
-    int minValue(State state, int alpha, int beta) {
-        LegalMoves legalMoves = new LegalMoves();
-        ArrayList<Piece[][]> possibleMoves = legalMoves.setLegalMoves(state);
-        if (isTerminal(state)) {
-            return utilityFunction(state);
+    private int minValue(State state, int depth, int alpha, int beta) {
+        if (depth == 0 || state.gameOver()) {
+            return state.getEvaluation();
         }
+
 
         int v = Integer.MAX_VALUE;
-        for (Piece[][] move : possibleMoves) {
-            State stateCopy = new State(move);
-            v = Math.min(v, maxValue(stateCopy, alpha, beta));
-            state.setEvaluation(v);
-            if (v <= alpha)
-                return v;
+        for (State child : state.getLeaves()) {
+
+            ArrayList<Piece[][]> childLegalMoves = new LegalMoves().setLegalMoves(child);
+            child.refreshLeaves(childLegalMoves);
+
+            v = Math.min(v, maxValue(child, depth - 1, alpha, beta));
             beta = Math.min(beta, v);
+
+            if (alpha >= beta) {
+                break;
+            }
         }
         return v;
+
     }
 
-    int utilityFunction(State state) {
-        return state.evaluationFunction();
-    }
-
-    boolean isTerminal(State state) {
-        return state.getLeaves().size() == 0;
+    /**
+     * picks a random move from given  list of legal moves
+     *
+     * @param legalMoves from which to pick a random move
+     * @return a random legal move state
+     */
+    private State randomMove(ArrayList<State> legalMoves) {
+        return legalMoves.get(new Random().nextInt(legalMoves.size()));
     }
 }

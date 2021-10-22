@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 
 public class LegalMoves {
-    static ArrayList<Piece[][]> legalMoves = new ArrayList<>();
+    private ArrayList<Piece[][]> legalMoves = new ArrayList<>();
 
     /**
      * updates legalMoves with legal moves
@@ -11,13 +11,14 @@ public class LegalMoves {
      * @param state from which to derive legal moves
      * @return array of legal moves
      */
-    static ArrayList<Piece[][]> setLegalMoves(State state) {
+    public ArrayList<Piece[][]> setLegalMoves(State state) {
         legalMoves.clear();
         jumpMoves(state);
 
         // add simple moves should no jump moves be available
-        if (legalMoves.size() == 0)
+        if (legalMoves.size() == 0) {
             simpleMoves(state);
+        }
 
         return legalMoves;
     }
@@ -26,7 +27,7 @@ public class LegalMoves {
      * updates legalMoves with legal simple moves
      * @param state from which to derive simple moves
      */
-    static void simpleMoves(State state) {
+    private void simpleMoves(State state) {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
                 if (state.getPlayer().equals(Player.RED)) {
@@ -166,7 +167,7 @@ public class LegalMoves {
      * updates legalMoves with legal jump moves
      * @param state from which to derive jump moves
      */
-    static void jumpMoves(State state) {
+    private void jumpMoves(State state) {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
                 if (state.getPlayer().equals(Player.RED))
@@ -180,7 +181,7 @@ public class LegalMoves {
     /**
      * jumpMoves helper functions
      */
-    static void jumpMovesRed(State state, int row, int col) {
+    private void jumpMovesRed(State state, int row, int col) {
         switch (state.getPieceAt(row, col)) {
             case RM:
                 // capture up left
@@ -195,7 +196,15 @@ public class LegalMoves {
                             board[row + 2][col - 2] = Piece.RK;
                         else
                             board[row + 2][col - 2] = Piece.RM;
-                        legalMoves.add(board);
+
+                        // basically if there are no more available jumps, add board to legalMoves
+                        // hold off on adding to legalMoves before checking if there is a valid connecting jump
+                        LegalMoves multiMove = new LegalMoves();
+                        multiMove.jumpMovesRed(new State(board, Player.RED), row + 2, col - 2);
+                        if (multiMove.legalMoves.size() == 0)
+                            legalMoves.add(board);
+                        else
+                            jumpMovesRed(new State(board, Player.RED), row + 2, col - 2);
                     }
                 }
                 // capture up right
@@ -210,7 +219,13 @@ public class LegalMoves {
                             board[row + 2][col + 2] = Piece.RK;
                         else
                             board[row + 2][col + 2] = Piece.RM;
-                        legalMoves.add(board);
+
+                        LegalMoves multiMove = new LegalMoves();
+                        multiMove.jumpMovesRed(new State(board, Player.RED), row + 2, col + 2);
+                        if (multiMove.legalMoves.size() == 0)
+                            legalMoves.add(board);
+                        else
+                            jumpMovesRed(new State(board, Player.RED), row + 2, col + 2);
                     }
                 }
                 break;
@@ -222,7 +237,13 @@ public class LegalMoves {
                         board[row][col] = Piece.E;
                         board[row - 1][col - 1] = Piece.E;
                         board[row - 2][col - 2] = Piece.RK;
-                        legalMoves.add(board);
+
+                        LegalMoves multiMove = new LegalMoves();
+                        multiMove.jumpMovesRed(new State(board, Player.RED), row - 2, col - 2);
+                        if (multiMove.legalMoves.size() == 0)
+                            legalMoves.add(board);
+                        else
+                            jumpMovesRed(new State(board, Player.RED), row - 2, col - 2);
                     }
                 }
                 // capture down right
@@ -232,7 +253,13 @@ public class LegalMoves {
                         board[row][col] = Piece.E;
                         board[row - 1][col + 1] = Piece.E;
                         board[row - 2][col + 2] = Piece.RK;
-                        legalMoves.add(board);
+
+                        LegalMoves multiMove = new LegalMoves();
+                        multiMove.jumpMovesRed(new State(board, Player.RED), row - 2, col + 2);
+                        if (multiMove.legalMoves.size() == 0)
+                            legalMoves.add(board);
+                        else
+                            jumpMovesRed(new State(board, Player.RED), row - 2, col + 2);
                     }
                 }
                 // capture up left
@@ -242,7 +269,13 @@ public class LegalMoves {
                         board[row][col] = Piece.E;
                         board[row + 1][col - 1] = Piece.E;
                         board[row + 2][col - 2] = Piece.RK;
-                        legalMoves.add(board);
+
+                        LegalMoves multiMove = new LegalMoves();
+                        multiMove.jumpMovesRed(new State(board, Player.RED), row + 2, col - 2);
+                        if (multiMove.legalMoves.size() == 0)
+                            legalMoves.add(board);
+                        else
+                            jumpMovesRed(new State(board, Player.RED), row + 2, col - 2);
                     }
                 }
                 // capture up right
@@ -252,14 +285,20 @@ public class LegalMoves {
                         board[row][col] = Piece.E;
                         board[row + 1][col + 1] = Piece.E;
                         board[row + 2][col + 2] = Piece.RK;
-                        legalMoves.add(board);
+
+                        LegalMoves multiMove = new LegalMoves();
+                        multiMove.jumpMovesRed(new State(board, Player.RED), row + 2, col + 2);
+                        if (multiMove.legalMoves.size() == 0)
+                            legalMoves.add(board);
+                        else
+                            jumpMovesRed(new State(board, Player.RED), row + 2, col + 2);
                     }
                 }
                 break;
         }
 
     }
-    static void jumpMovesWhite(State state, int row, int col) {
+    private void jumpMovesWhite(State state, int row, int col) {
         switch (state.getPieceAt(row, col)) {
             case WM:
                 // capture down left
@@ -274,7 +313,13 @@ public class LegalMoves {
                             board[row - 2][col - 2] = Piece.WK;
                         else
                             board[row - 2][col - 2] = Piece.WM;
-                        legalMoves.add(board);
+
+                        LegalMoves multiMove = new LegalMoves();
+                        multiMove.jumpMovesWhite(new State(board, Player.WHITE), row - 2, col - 2);
+                        if (multiMove.legalMoves.size() == 0)
+                            legalMoves.add(board);
+                        else
+                            jumpMovesWhite(new State(board, Player.WHITE), row - 2, col - 2); // checks for multi jumps
                     }
                 }
                 // capture down right
@@ -289,7 +334,13 @@ public class LegalMoves {
                             board[row - 2][col + 2] = Piece.WK;
                         else
                             board[row - 2][col + 2] = Piece.WM;
-                        legalMoves.add(board);
+
+                        LegalMoves multiMove = new LegalMoves();
+                        multiMove.jumpMovesWhite(new State(board, Player.WHITE), row - 2, col + 2);
+                        if (multiMove.legalMoves.size() == 0)
+                            legalMoves.add(board);
+                        else
+                            jumpMovesWhite(new State(board, Player.WHITE), row - 2, col + 2);
                     }
                 }
                 break;
@@ -301,7 +352,13 @@ public class LegalMoves {
                         board[row][col] = Piece.E;
                         board[row - 1][col - 1] = Piece.E;
                         board[row - 2][col - 2] = Piece.WK;
-                        legalMoves.add(board);
+
+                        LegalMoves multiMove = new LegalMoves();
+                        multiMove.jumpMovesWhite(new State(board, Player.WHITE), row - 2, col - 2);
+                        if (multiMove.legalMoves.size() == 0)
+                            legalMoves.add(board);
+                        else
+                            jumpMovesWhite(new State(board, Player.WHITE), row - 2, col - 2);
                     }
                 }
                 // capture down right
@@ -311,7 +368,13 @@ public class LegalMoves {
                         board[row][col] = Piece.E;
                         board[row - 1][col + 1] = Piece.E;
                         board[row - 2][col + 2] = Piece.WK;
-                        legalMoves.add(board);
+
+                        LegalMoves multiMove = new LegalMoves();
+                        multiMove.jumpMovesWhite(new State(board, Player.WHITE), row - 2, col + 2);
+                        if (multiMove.legalMoves.size() == 0)
+                            legalMoves.add(board);
+                        else
+                            jumpMovesWhite(new State(board, Player.WHITE), row - 2, col + 2);
                     }
                 }
                 // capture up left
@@ -321,7 +384,13 @@ public class LegalMoves {
                         board[row][col] = Piece.E;
                         board[row + 1][col - 1] = Piece.E;
                         board[row + 2][col - 2] = Piece.WK;
-                        legalMoves.add(board);
+
+                        LegalMoves multiMove = new LegalMoves();
+                        multiMove.jumpMovesWhite(new State(board, Player.WHITE), row + 2, col - 2);
+                        if (multiMove.legalMoves.size() == 0)
+                            legalMoves.add(board);
+                        else
+                            jumpMovesWhite(new State(board, Player.WHITE), row + 2, col - 2);
                     }
                 }
                 // capture up right
@@ -331,7 +400,13 @@ public class LegalMoves {
                         board[row][col] = Piece.E;
                         board[row + 1][col + 1] = Piece.E;
                         board[row + 2][col + 2] = Piece.WK;
-                        legalMoves.add(board);
+
+                        LegalMoves multiMove = new LegalMoves();
+                        multiMove.jumpMovesWhite(new State(board, Player.WHITE), row + 2, col + 2);
+                        if (multiMove.legalMoves.size() == 0)
+                            legalMoves.add(board);
+                        else
+                            jumpMovesWhite(new State(board, Player.WHITE), row + 2, col + 2);
                     }
                 }
                 break;

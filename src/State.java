@@ -3,11 +3,8 @@ import java.util.Arrays;
 
 public class State {
     private Piece[][] board = new Piece[8][8];
-    private State parent;
-    private ArrayList<State> children;
     private int evaluation;
     private Player player;
-
     private ArrayList<State> leaves = new ArrayList<State>();
 
     /**
@@ -17,7 +14,6 @@ public class State {
         initializeEmptyBoard();
         initialRedPieces();
         initialWhitePieces();
-        this.children = new ArrayList<State>();
         this.evaluation = evaluationFunction();
         this.player = Player.RED;
         this.leaves = new ArrayList<State>();
@@ -28,8 +24,6 @@ public class State {
                 this.board[i][j] = state.getBoard()[i][j];
             }
         }
-        this.parent = state.parent;
-        this.children = state.getChildren();
         this.evaluation = state.evaluationFunction();
         this.player = state.getPlayer();
         this.leaves = state.getLeaves();
@@ -40,8 +34,19 @@ public class State {
                 this.board[i][j] = board[i][j];
             }
         }
-        this.children = new ArrayList<>();
         this.evaluation = evaluationFunction();
+        this.player = null;
+        this.leaves = new ArrayList<State>();
+    }
+    public State(Piece[][] board, Player player) {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                this.board[i][j] = board[i][j];
+            }
+        }
+        this.evaluation = evaluationFunction();
+        this.player = player;
+        this.leaves = new ArrayList<State>();
     }
 
     /**
@@ -49,12 +54,6 @@ public class State {
      */
     Piece[][] getBoard() {
         return board;
-    }
-    State getParent() {
-        return parent;
-    }
-    ArrayList<State> getChildren() {
-        return children;
     }
     ArrayList<State> getLeaves() { return leaves; }
     int getEvaluation() {
@@ -75,9 +74,6 @@ public class State {
             for (int j = 0; j < 8; j++)
                 this.board[i][j] = board[i][j];
         }
-    }
-    void setParent(State parent) {
-        this.parent = parent;
     }
     void setEvaluation(int evaluation) {
         this.evaluation = evaluation;
@@ -130,17 +126,6 @@ public class State {
         board[row][col] = piece;
     }
 
-    void clearChildren() {
-        this.children.clear();
-    }
-    void addChildren(State state) {
-        this.getChildren().add(state);
-    }
-
-    void updateEvaluation() {
-        setEvaluation(evaluationFunction());
-    }
-
     /**
      * white - max player
      * red - min player
@@ -149,6 +134,11 @@ public class State {
         return getNumOfWhitePieces() - getNumOfRedPieces();
     }
 
+    /**
+     * gets the number of red pieces at the current state
+     *
+     * @return number of red pieces
+     */
     int getNumOfRedPieces() {
         int redPieces = 0;
         for (int i = 0; i < 8; i++) {
@@ -160,6 +150,12 @@ public class State {
         }
         return redPieces;
     }
+
+    /**
+     * gets the number of white pieces at the current state
+     *
+     * @return number of white pieces
+     */
     int getNumOfWhitePieces() {
         int whitePieces = 0;
         for (int i = 0; i < 8; i++) {
@@ -172,6 +168,9 @@ public class State {
         return whitePieces;
     }
 
+    /**
+     * prints board representation of current state
+     */
     void printBoard() {
         System.out.println(" _______________________________________");
         for (int i = 7; i >= 0; i--) {
@@ -199,6 +198,9 @@ public class State {
         }
     }
 
+    /**
+     * prints board (miniaturized) presentation of current state
+     */
     void printBoardMini() {
         for (int i = 7; i >= 0; i--) {
             for (int j = 0; j < 8; j++) {
@@ -224,29 +226,30 @@ public class State {
         }
     }
 
-    void printTileIndexes() {
-        System.out.println(" _______________________________________");
-        for (int i = 7; i >= 0; i--) {
-            System.out.print("|");
-            for (int j = 0; j < 8; j++) {
-                System.out.print(" " + i + j + " |");
-            }
-            System.out.println("\n|____|____|____|____|____|____|____|____|");
+    /**
+     * adds the state of a legal move (leaf) to the current state
+     *
+     * @param state to add to current state leaves
+     */
+    void addLeaf(State state) {
+        leaves.add(state);
+    }
+
+    /**
+     * updates leaf values to a corresponding list of legal moves (board states)
+     *
+     * @param legalMoves from which to update leaves
+     */
+    void refreshLeaves(ArrayList<Piece[][]> legalMoves) {
+        clearLeaves();
+        for (Piece[][] a : legalMoves) {
+            State leaf = getPlayer().equals(Player.RED) ? new State(a, Player.WHITE) : new State(a, Player.RED);
+            addLeaf(leaf);
         }
     }
 
-    void updateLeaves(State state) {
-        if (state.getChildren().size() == 0) {
-            leaves.add(state);
-            return;
-        }
-        for (int i = 0; i < state.getChildren().size(); i++) {
-            updateLeaves(state.getChildren().get(i));
-        }
-    }
-
-    void refreshLeaves() {
-        leaves = new ArrayList<State>();
+    void clearLeaves() {
+        leaves.clear();
     }
 
     void printLeaves() {
@@ -263,4 +266,7 @@ public class State {
         }
     }
 
+    boolean gameOver() {
+        return (getNumOfRedPieces() == 0 || getNumOfWhitePieces() == 0);
+    }
 }

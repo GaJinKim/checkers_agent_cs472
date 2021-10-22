@@ -4,99 +4,131 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class Main {
+    static boolean gameOver = false;
+    static int redAIDifficulty = 5; // max depth that red AI will search
+    static int whiteAIDifficulty = 5; // max depth that white AI will search
+
     public static void main(String[] args) {
         State state = new State();
         Scanner scan = new Scanner(System.in);
         LegalMoves legalMoves = new LegalMoves();
-        Search search = new Search();
 
         // testing adding a random piece
         state.clearAllPieces();
-        state.setPieceAt(4,0, Piece.RM);
-//        state.setPieceAt(7,1, Piece.WM);
+        state.setPieceAt(7,1, Piece.RK);
+        state.setPieceAt(7,7, Piece.RK);
+        state.setPieceAt(2,0, Piece.RM);
+        state.setPieceAt(4,4, Piece.RM);
+        state.setPieceAt(1,5, Piece.RM);
+        state.setPieceAt(1,7, Piece.RM);
 
-//        state.setPieceAt(2,0, Piece.WM);
-        state.setPieceAt(6, 2, Piece.WM);
+        state.setPieceAt(4, 0, Piece.WM);
         state.setPieceAt(6, 0, Piece.WM);
-//        state.setPieceAt(2,4, Piece.WM);
-//        state.setPieceAt(2,6, Piece.WM);
-//        state.setPieceAt(4,6, Piece.WM);
+        state.setPieceAt(7, 3, Piece.WM);
+        state.setPieceAt(6, 4, Piece.WM);
+        state.setPieceAt(3, 5, Piece.WM);
+        state.setPieceAt(3, 7, Piece.WM);
 
-//        System.out.println("[How to play]\nAt each state, you will be asked to pick between a list of legal moves.");
-//        System.out.print("\n[You are first to act (red)]\nType \"start\" to begin: ");
-//        scan.next();
+//        printIntroduction(state, scan);
 
+        // print initial board state
         System.out.println("\n[Initial Board State]");
         state.printBoard();
 
-        State curState = new State();
-        while (true) {
+        while (!gameOver) {
             // Red's Turn
             state.setPlayer(Player.RED);
-            System.out.println("\n[Red Player's Legal Moves]");
-            ArrayList<Piece[][]> redLegalMoves = legalMoves.setLegalMoves(state);
+//            state = humanRedControl(state, scan, legalMoves);
+            state = aiRedControl(state, legalMoves, redAIDifficulty);
 
-            if (redLegalMoves.isEmpty()) {
-                System.out.println("Red has no legal moves!");
-                break;
-            }
-
-            for (Piece[][] a : redLegalMoves) {
-                curState = new State(a);
-                curState.setPlayer(Player.RED);
-            }
-
-            // TODO: just print out the last state in redLegalMoves for now
-            System.out.println("Red's selected move");
-//            state = new State(curState);
-            state = new State(redLegalMoves.get(new Random().nextInt(redLegalMoves.size())));
-            state.printBoard();
-
-            redLegalMoves.clear();
+            if (gameOver) break;
 
             // White's Turn
             state.setPlayer(Player.WHITE);
-            System.out.println("\n[White Player's Legal Moves]");
             ArrayList<Piece[][]> whiteLegalMoves = legalMoves.setLegalMoves(state);
 
-            if (whiteLegalMoves.isEmpty()) {
-                System.out.println("White has no legal moves!");
+            if (endDetected(state, whiteLegalMoves)) {
+                gameOver = true;
                 break;
             }
 
-            ArrayList<State> bestPossibleMoves = search.alphaBetaSearch(state);
-            System.out.println("White's selected move");
-            state = bestPossibleMoves.get(randomValidIndex(bestPossibleMoves));
+            System.out.println("\n[Player White's Legal Moves]");
+
+            // retrieves reachable states
+            state.refreshLeaves(whiteLegalMoves);
+            System.out.println(state.getPlayer() + " has " + state.getLeaves().size() + " viable moves");
+//            state.printLeaves(); // prints board
+
+            state = new State(new Search(whiteAIDifficulty).alphaBetaSearch(state.getLeaves()));
+            System.out.println("Resulting Board (now RED's turn)");
             state.printBoard();
-
             whiteLegalMoves.clear();
-
-
-//            state.refreshLeaves();
-//            state.updateLeaves(state);
-
-//            for (int i = 0; i < state.getLeaves().size(); i++) {
-//                System.out.println("\nType \"" + i + "\" to move:");
-//                state.getLeaves().get(i).printBoardMini();
-//            }
-//            int decision = scan.nextInt();
-//            if (decision <  0 || decision >= state.getLeaves().size()) {
-//                System.out.println("Invalid move, please enter again: ");
-//                decision = scan.nextInt();
-//            }
-//            state = new State(state.getLeaves().get(decision));
-
-//            state = new State(state.getLeaves().get(getValidRandomInd(state.getChildren())));
-//            state.printBoard();
         }
     }
 
     /**
-     * retrieves a valid random index for a given array list
-     * @return random valid index
+     * print introduction & instructors
      */
-    static int randomValidIndex(ArrayList<State> stateArrayList) {
-        return new Random().nextInt(stateArrayList.size());
+    static void printIntroduction(State state, Scanner scan) {
+        System.out.println("\n[How to play]\nAt each state, you will be asked to pick between a list of legal moves.");
+        System.out.print("\n[You are Player Red (first to move)]\nType \"start\" to begin: ");
+        scan.next();
+    }
+
+    /**
+     * ai controlled by red
+     *
+     * @param state current
+     * @param legalMoves possible moves from which the ai can choose
+     * @param depth at which the AI will search
+     *
+     * @return optimally selected state
+     */
+    static State aiRedControl(State state, LegalMoves legalMoves, int depth) {
+        ArrayList<Piece[][]> redLegalMoves = legalMoves.setLegalMoves(state);
+        if (endDetected(state, redLegalMoves)) {
+            gameOver = true;
+            return null;
+        }
+
+        state.refreshLeaves(redLegalMoves);
+        System.out.println(state.getPlayer() + " has " + state.getLeaves().size() + " viable moves");
+
+        state = new State(new Search(depth).alphaBetaSearch(state.getLeaves()));
+        System.out.println("Resulting Board (now WHITE's turn)");
+        state.printBoard();
+        redLegalMoves.clear();
+
+        return state;
+    }
+
+    /**
+     * player control red
+     */
+    static State humanRedControl(State state, Scanner scan, LegalMoves legalMoves) {
+        ArrayList<Piece[][]> redLegalMoves = legalMoves.setLegalMoves(state);
+        if (endDetected(state, redLegalMoves)) {
+            gameOver = true;
+            return null;
+        }
+
+        System.out.print("\n[Player Red's Legal Moves]");
+        for (int i = 0; i < redLegalMoves.size(); i++) {
+            System.out.println("\nType \"" + i + "\" to move:");
+            new State(redLegalMoves.get(i)).printBoardMini();
+        }
+
+        int decision = scan.nextInt();
+        if (decision <  0 || decision >= redLegalMoves.size()) {
+            System.out.println("Invalid move, please enter again: ");
+            decision = scan.nextInt();
+        }
+        state = new State(redLegalMoves.get(decision));
+        System.out.println("Resulting Board (now WHITE's turn)");
+        state.printBoard();
+
+        redLegalMoves.clear();
+        return state;
     }
 
     /**
@@ -107,21 +139,23 @@ public class Main {
      * @param state to be checked for end conditions
      * @return true if is terminal state, false otherwise
      */
-    static boolean endDetected(State state) {
+    static boolean endDetected(State state, ArrayList<Piece[][]> legalMoves) {
         boolean redWin = state.getNumOfWhitePieces() == 0;
         boolean whiteWin = state.getNumOfRedPieces() == 0;
-        boolean tie = state.getChildren().size() == 0;
+        boolean tie = legalMoves.size() == 0;
 
         if (redWin || whiteWin || tie) {
-            System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n[Final Board State]");
+            gameOver = true;
+            System.out.println("\n[Final Board State]");
             state.printBoard();
         }
+
         if (redWin)
-            System.out.println("Game Over: Red Wins");
+            System.out.println("Game Over: Red Wins!");
         else if (whiteWin)
-            System.out.println("Game Over: White Wins");
+            System.out.println("Game Over: White Wins!");
         else if (tie)
-            System.out.println("Game Over: Stalemate");
+            System.out.println("Game Over: Stalemate (No valid moves)");
 
         return redWin || whiteWin || tie;
     }
