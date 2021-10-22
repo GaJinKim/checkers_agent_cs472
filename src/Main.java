@@ -5,31 +5,27 @@ import java.util.Scanner;
 
 public class Main {
     static boolean gameOver = false;
-    static int redAIDifficulty = 5; // max depth that red AI will search
-    static int whiteAIDifficulty = 5; // max depth that white AI will search
+
+    /**
+     * difficulty (depth):
+     *  0 - picks a random move
+     *  1 - looks one move ahead
+     *  3 - looks three moves ahead
+     */
+    static int redAIDifficulty = 3; // max depth that red AI will search
+    static int whiteAIDifficulty = 3; // max depth that white AI will search
 
     public static void main(String[] args) {
         State state = new State();
         Scanner scan = new Scanner(System.in);
         LegalMoves legalMoves = new LegalMoves();
 
-        // testing adding a random piece
-        state.clearAllPieces();
-        state.setPieceAt(7,1, Piece.RK);
-        state.setPieceAt(7,7, Piece.RK);
-        state.setPieceAt(2,0, Piece.RM);
-        state.setPieceAt(4,4, Piece.RM);
-        state.setPieceAt(1,5, Piece.RM);
-        state.setPieceAt(1,7, Piece.RM);
-
-        state.setPieceAt(4, 0, Piece.WM);
-        state.setPieceAt(6, 0, Piece.WM);
-        state.setPieceAt(7, 3, Piece.WM);
-        state.setPieceAt(6, 4, Piece.WM);
-        state.setPieceAt(3, 5, Piece.WM);
-        state.setPieceAt(3, 7, Piece.WM);
-
-//        printIntroduction(state, scan);
+        // introduction and instructions
+        System.out.println("\n[How to play]\nYou will be asked to pick between a list of legal moves.\nYou will be player RED (first to move).");
+        System.out.println("\n[Please enter AI's difficulty/depth to begin]");
+        System.out.println("0: AI makes random legal move\n1: AI looks 1 move ahead\n3: AI looks 3 moves ahead\n5: AI looks 5 moves ahead\n>5: not recommended as some states may take longer to load");
+        System.out.print("\nChoice? ");
+        whiteAIDifficulty = scan.nextInt();
 
         // print initial board state
         System.out.println("\n[Initial Board State]");
@@ -38,8 +34,8 @@ public class Main {
         while (!gameOver) {
             // Red's Turn
             state.setPlayer(Player.RED);
-//            state = humanRedControl(state, scan, legalMoves);
-            state = aiRedControl(state, legalMoves, redAIDifficulty);
+            state = humanRedControl(state, scan, legalMoves);
+//            state = aiRedControl(state, legalMoves, redAIDifficulty);
 
             if (gameOver) break;
 
@@ -60,19 +56,10 @@ public class Main {
 //            state.printLeaves(); // prints board
 
             state = new State(new Search(whiteAIDifficulty).alphaBetaSearch(state.getLeaves()));
-            System.out.println("Resulting Board (now RED's turn)");
+            System.out.println("Resulting Board (now RED's (your) turn)");
             state.printBoard();
             whiteLegalMoves.clear();
         }
-    }
-
-    /**
-     * print introduction & instructors
-     */
-    static void printIntroduction(State state, Scanner scan) {
-        System.out.println("\n[How to play]\nAt each state, you will be asked to pick between a list of legal moves.");
-        System.out.print("\n[You are Player Red (first to move)]\nType \"start\" to begin: ");
-        scan.next();
     }
 
     /**
@@ -98,7 +85,6 @@ public class Main {
         System.out.println("Resulting Board (now WHITE's turn)");
         state.printBoard();
         redLegalMoves.clear();
-
         return state;
     }
 
@@ -118,9 +104,10 @@ public class Main {
             new State(redLegalMoves.get(i)).printBoardMini();
         }
 
+        System.out.print("\nYour Move? ");
         int decision = scan.nextInt();
         if (decision <  0 || decision >= redLegalMoves.size()) {
-            System.out.println("Invalid move, please enter again: ");
+            System.out.print("Invalid move, please enter new move: ");
             decision = scan.nextInt();
         }
         state = new State(redLegalMoves.get(decision));
@@ -158,5 +145,38 @@ public class Main {
             System.out.println("Game Over: Stalemate (No valid moves)");
 
         return redWin || whiteWin || tie;
+    }
+
+    /**
+     * sets initial board state to a fixed checkers pattern (puzzle)
+     *
+     * @param state
+     */
+    static void setPuzzle(State state) {
+        state.clearAllPieces();
+        state.setPieceAt(2,0, Piece.RM);
+        state.setPieceAt(3,1, Piece.RM);
+        state.setPieceAt(1,1, Piece.RM);
+        state.setPieceAt(0,2, Piece.RM);
+        state.setPieceAt(1,3, Piece.RM);
+        state.setPieceAt(1,5, Piece.RM);
+        state.setPieceAt(5,5, Piece.RM);
+        state.setPieceAt(0,6, Piece.RM);
+        state.setPieceAt(4,6, Piece.RM);
+        state.setPieceAt(1,7, Piece.RM);
+        state.setPieceAt(3,7, Piece.RM);
+
+        state.setPieceAt(6, 0, Piece.WM);
+        state.setPieceAt(5, 1, Piece.WM);
+        state.setPieceAt(4, 2, Piece.WM);
+        state.setPieceAt(3, 3, Piece.WM);
+        state.setPieceAt(5, 3, Piece.WM);
+        state.setPieceAt(7, 3, Piece.WM);
+        state.setPieceAt(5, 3, Piece.WM);
+        state.setPieceAt(4, 4, Piece.WM);
+        state.setPieceAt(3, 5, Piece.WM);
+        state.setPieceAt(7, 5, Piece.WM);
+        state.setPieceAt(5, 7, Piece.WM);
+        state.setPieceAt(7, 7, Piece.WM);
     }
 }

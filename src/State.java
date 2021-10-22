@@ -127,11 +127,58 @@ public class State {
     }
 
     /**
-     * white - max player
-     * red - min player
+     * heuristic function based on the difference of white and red pieces on board
+     *
+     * white is maximizing player, red is minimizing player
+     *
+     * @return heuristic value
+     */
+//    int evaluationFunction() {
+//        return getNumOfWhitePieces() - getNumOfRedPieces();
+//    }
+
+    /**
+     * heuristic function based on:
+     * man weight:
+     *  - default value = 10
+     *  - +1 for its row index (closer to promoting = better)
+     *  - halved if on edge (col)
+     *
+     * king weight:
+     *  - default value = 34
+     *  - halved if on edge (row or col)
+     *
+     *  white is maximizing player, red is minimizing player
+     *
+     * @return heuristic value
      */
     int evaluationFunction() {
-        return getNumOfWhitePieces() - getNumOfRedPieces();
+        int evaluation = 0;
+        int currentPieceEval = 0;
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                Piece current = board[row][col];
+                switch (current) {
+                    case WM:
+                        currentPieceEval = 10 + Math.abs(7 - row);
+                        evaluation += (col == 0 || col == 7) ? (currentPieceEval / 2) : currentPieceEval;
+                        break;
+                    case RM:
+                        currentPieceEval = 10 + row;
+                        evaluation -= (col == 0 || col == 7) ? (currentPieceEval / 2) : currentPieceEval;
+                        break;
+                    case WK:
+                        currentPieceEval = 34;
+                        evaluation += (col == 0 || col == 7 || row == 0 || row == 7) ? currentPieceEval / 2 : currentPieceEval;
+                        break;
+                    case RK:
+                        currentPieceEval = 34;
+                        evaluation -= (col == 0 || col == 7 || row == 0 || row == 7) ? currentPieceEval / 2 : currentPieceEval;
+                        break;
+                }
+            }
+        }
+        return evaluation;
     }
 
     /**

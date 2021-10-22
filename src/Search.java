@@ -54,6 +54,10 @@ public class Search {
         }
 
         System.out.println("of which " + bestMoves.size() + " (optimal) moves will be considered.");
+        for (State s : bestMoves) {
+            s.printBoardMini();
+            System.out.println();
+        }
         System.out.println();
         return randomMove(bestMoves);
     }
@@ -74,16 +78,14 @@ public class Search {
 
         int v = Integer.MIN_VALUE;
         for (State child : state.getLeaves()) {
-
             ArrayList<Piece[][]> childLegalMoves = new LegalMoves().setLegalMoves(child);
             child.refreshLeaves(childLegalMoves);
 
             v = Math.max(v, minValue(child, depth - 1, alpha, beta));
             alpha = Math.max(alpha, v);
 
-            if (alpha >= beta) {
+            if (alpha >= beta)
                 break;
-            }
         }
         return v;
     }
@@ -102,22 +104,18 @@ public class Search {
             return state.getEvaluation();
         }
 
-
         int v = Integer.MAX_VALUE;
         for (State child : state.getLeaves()) {
-
             ArrayList<Piece[][]> childLegalMoves = new LegalMoves().setLegalMoves(child);
             child.refreshLeaves(childLegalMoves);
 
             v = Math.min(v, maxValue(child, depth - 1, alpha, beta));
             beta = Math.min(beta, v);
 
-            if (alpha >= beta) {
+            if (alpha >= beta)
                 break;
-            }
         }
         return v;
-
     }
 
     /**
