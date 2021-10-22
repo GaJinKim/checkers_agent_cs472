@@ -13,11 +13,11 @@ public class Main {
         // testing adding a random piece
         state.clearAllPieces();
         state.setPieceAt(4,0, Piece.RM);
-        state.setPieceAt(7,1, Piece.WM);
+//        state.setPieceAt(7,1, Piece.WM);
 
 //        state.setPieceAt(2,0, Piece.WM);
-//        state.setPieceAt(6, 2, Piece.WM);
-//        state.setPieceAt(6, 4, Piece.WM);
+        state.setPieceAt(6, 2, Piece.WM);
+        state.setPieceAt(6, 0, Piece.WM);
 //        state.setPieceAt(2,4, Piece.WM);
 //        state.setPieceAt(2,6, Piece.WM);
 //        state.setPieceAt(4,6, Piece.WM);
