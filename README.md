@@ -11,3 +11,4 @@ Lab 2 Assignment for CS 472
 
 **Lab Report (Parts 6 and 7) located in project top directory (same as this one)**
 - questions6and7.pdf
+- note: if you preview on github, pdf may cut off at the end, press "More Pages" to view full document.
