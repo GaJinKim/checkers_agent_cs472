@@ -118,12 +118,11 @@ public class State {
             }
         }
     }
-
-    Piece getPieceAt(int row, int col) {
-        return board[row][col];
-    }
     void setPieceAt(int row, int col, Piece piece) {
         board[row][col] = piece;
+    }
+    Piece getPieceAt(int row, int col) {
+        return board[row][col];
     }
 
     /**
@@ -306,7 +305,7 @@ public class State {
         }
     }
 
-    void refreshBoard() {
+    void clearBoard() {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++)
                 board[i][j] = Piece.E;
